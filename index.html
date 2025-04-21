@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Equipos de Fútbol</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.51.5/dist/full.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <style>
+        .draggable {
+            cursor: move;
+        }
+        .dragging {
+            opacity: 0.5;
+        }
+        .jugador-item {
+            transition: all 0.2s ease;
+        }
+        .jugador-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .grupo-verde { background-color: #4ade80; }
+        .grupo-naranja { background-color: #fb923c; }
+        .grupo-rojo { background-color: #f87171; }
+        .pechera-verde { background-color: #22c55e; }
+        .pechera-negro { background-color: #333333; color: white; }
+        .sin-pechera { background-color: #e5e7eb; }
+        .hidden { display: none; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .drop-area {
+            min-height: 100px;
+        }
+        /* Estilos para la cancha de fútbol */
+        .cancha {
+            background-color: #4CAF50;
+            border: 5px solid white;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .campo-superior {
+            height: 48%;
+            border-bottom: 2px dashed white;
+            padding: 8px;
+        }
+        .campo-inferior {
+            height: 48%;
+            border-top: 2px dashed white;
+            padding: 8px;
+        }
+        .linea-central {
+            height: 4%;
+            background-color: #4CAF50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .circulo-central {
+            width: 40px;
+            height: 40px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            margin-top: -20px;
+        }
+        @media (max-width: 768px) {
+            .cancha {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <h1 class="text-3xl font-bold text-center mb-6">Organizador de Equipos de Fútbol</h1>
+        <!-- Pantalla 1: Ingreso de jugadores -->
+        <div id="pantalla-1" class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Ingresa los nombres de los jugadores</h2>
+                <div class="mb-4">
+                    <textarea 
+                        id="ingreso-nombres" 
+                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        rows="5" 
+                        placeholder="Ej: Tú, Inti, Sergio, Benja"
+                    ></textarea>
+                </div>
+                <div class="flex justify-between">
+                    <p id="contador-jugadores" class="text-gray-600">0 jugadores</p>
+                    <button id="btn-procesar" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
+                        Procesar Jugadores
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Pantalla 2: Clasificación en grupos -->
+        <div id="pantalla-2" class="hidden mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Clasificación en Grupos</h2>
+                <div class="flex items-center mb-4">
+                    <input 
+                        type="text" 
+                        id="input-jugador-tardio" 
+                        class="p-2 border rounded-md mr-2" 
+                        placeholder="Nombre de jugador tardío"
+                    >
+                    <button 
+                        id="btn-agregar-tardio" 
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+                    >
+                        Agregar Tardío
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Grupo Verde -->
+                    <div>
+                        <h3 class="text-center font-bold mb-2 bg-green-400 p-2 rounded-t-md flex justify-center">
+                            Verde <span id="contador-verde" class="ml-2">(0)</span>
+                        </h3>
+                        <div id="grupo-verde" class="drop-area bg-green-100 p-2 rounded-b-md min-h-[200px]"></div>
+                    </div>
+                    <!-- Grupo Naranja -->
+                    <div>
+                        <h3 class="text-center font-bold mb-2 bg-orange-500 p-2 rounded-t-md flex justify-center">
+                            Naranja <span id="contador-naranja" class="ml-2">(0)</span>
+                        </h3>
+                        <div id="grupo-naranja" class="drop-area bg-orange-100 p-2 rounded-b-md min-h-[200px]"></div>
+                    </div>
+                    <!-- Grupo Rojo -->
+                    <div>
+                        <h3 class="text-center font-bold mb-2 bg-red-400 p-2 rounded-t-md flex justify-center">
+                            Rojo <span id="contador-rojo" class="ml-2">(0)</span>
+                        </h3>
+                        <div id="grupo-rojo" class="drop-area bg-red-100 p-2 rounded-b-md min-h-[200px]"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                    <button id="btn-atras-p2" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition">
+                        Atrás
+                    </button>
+                    <button id="btn-whatsapp" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center">
+                        <i class="bx bxl-whatsapp text-lg mr-2"></i> Compartir en WhatsApp
+                    </button>
+                    <button id="btn-continuar-p2" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
+                        Continuar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Pantalla 3: Visualización de partidos (Cancha de fútbol) -->
+        <div id="pantalla-3" class="hidden mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Partido <span id="numero-partido">1</span></h2>
+                <div class="cancha mb-6 md:mb-8">
+                    <div class="campo-superior">
+                        <h3 class="text-center font-bold mb-2 bg-green-500 p-2 rounded-md text-white">Pechera Verde</h3>
+                        <div id="equipo-pechera" class="drop-area min-h-[100px]"></div>
+                    </div>
+                    <div class="linea-central">
+                        <div class="circulo-central"></div>
+                    </div>
+                    <div class="campo-inferior">
+                        <h3 class="text-center font-bold mb-2 bg-gray-600 p-2 rounded-md text-white">Sin Pechera</h3>
+                        <div id="equipo-sin-pechera" class="drop-area min-h-[100px]"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                    <button id="btn-atras-p3" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition">
+                        Atrás
+                    </button>
+                    <div>
+                        <button id="btn-cambiar-partido" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition mr-2">
+                            Ver Partido <span id="siguiente-partido">2</span>
+                        </button>
+                        <button id="btn-whatsapp-equipos" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center inline-flex">
+                            <i class="bx bxl-whatsapp text-lg mr-2"></i> Compartir
+                        </button>
+                    </div>
+                    <button id="btn-reiniciar" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition">
+                        Reiniciar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Notificación de copiado -->
+        <div id="notificacion" class="fixed bottom-4 right-4 bg-green-500 text-white py-2 px-4 rounded-md shadow-lg hidden">
+            ¡Listo para compartir en WhatsApp!
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Referencias a elementos DOM
+            const pantalla1 = document.getElementById('pantalla-1');
+            const pantalla2 = document.getElementById('pantalla-2');
+            const pantalla3 = document.getElementById('pantalla-3');
+            const ingresoNombres = document.getElementById('ingreso-nombres');
+            const contadorJugadores = document.getElementById('contador-jugadores');
+            const btnProcesar = document.getElementById('btn-procesar');
+            const grupoVerde = document.getElementById('grupo-verde');
+            const grupoNaranja = document.getElementById('grupo-naranja');
+            const grupoRojo = document.getElementById('grupo-rojo');
+            const btnAtrasP2 = document.getElementById('btn-atras-p2');
+            const btnWhatsapp = document.getElementById('btn-whatsapp');
+            const btnContinuarP2 = document.getElementById('btn-continuar-p2');
+            const btnAtrasP3 = document.getElementById('btn-atras-p3');
+            const btnReiniciar = document.getElementById('btn-reiniciar');
+            const btnCambiarPartido = document.getElementById('btn-cambiar-partido');
+            const btnWhatsappEquipos = document.getElementById('btn-whatsapp-equipos');
+            const numeroPartido = document.getElementById('numero-partido');
+            const siguientePartido = document.getElementById('siguiente-partido');
+            const equipoPechera = document.getElementById('equipo-pechera');
+            const equipoSinPechera = document.getElementById('equipo-sin-pechera');
+            const notificacion = document.getElementById('notificacion');
+            const inputJugadorTardio = document.getElementById('input-jugador-tardio');
+            const btnAgregarTardio = document.getElementById('btn-agregar-tardio');
+
+            // Listas predefinidas
+            const listaVerde = ['Nico', 'Inti', 'Sergio', 'Benja', 'Beto', 'Daniel', 'Matías Cel', 'Maxi Alto', 'Maxi Chico', 'Rodri', 'Juancho'];
+            const listaNaranja = ['Jero', 'Jesus', 'Juan Papá', 'Tato', 'Pipo', 'Victor'];
+
+            // Estado global de la aplicación
+            let partidoActual = 1;
+            let equiposPartido1 = {pechera: [], sinPechera: []};
+            let equiposPartido2 = {pechera: [], sinPechera: []};
+
+            // Función para normalizar texto
+            function normalizarTexto(texto) {
+                return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            }
+
+            // Función para comparar nombres
+            function compararNombres(nombre1, nombre2) {
+                return normalizarTexto(nombre1) === normalizarTexto(nombre2);
+            }
+
+            // Función para verificar si un nombre está en una lista
+            function nombreEnLista(nombre, lista) {
+                const nombreNormalizado = normalizarTexto(nombre);
+                return lista.some(item => normalizarTexto(item) === nombreNormalizado);
+            }
+
+            // Función para mostrar notificación
+            function mostrarNotificacion(mensaje = '¡Listo para compartir en WhatsApp!') {
+                notificacion.textContent = mensaje;
+                notificacion.classList.remove('hidden');
+                setTimeout(() => {
+                    notificacion.classList.add('hidden');
+                }, 2000);
+            }
+
+            // Evento para auto-pegar desde el portapapeles
+            ingresoNombres.addEventListener('click', async function() {
+                try {
+                    const texto = await navigator.clipboard.readText();
+                    ingresoNombres.value = texto;
+                    actualizarContador();
+                } catch (err) {
+                    console.error('Error al acceder al portapapeles:', err);
+                }
+            });
+
+            // Actualizar contador de jugadores
+            function actualizarContador() {
+                const nombres = ingresoNombres.value
+                    .split(',')
+                    .map(nombre => nombre.trim())
+                    .filter(nombre => nombre.length > 0);
+                contadorJugadores.textContent = `${nombres.length} jugadores`;
+            }
+            ingresoNombres.addEventListener('input', actualizarContador);
+
+            // Procesar jugadores y clasificar
+            btnProcesar.addEventListener('click', function() {
+                const nombres = ingresoNombres.value
+                    .split(',')
+                    .map(nombre => nombre.trim())
+                    .filter(nombre => nombre.length > 0);
+                if (nombres.length === 0) {
+                    alert('Por favor, ingresa al menos un nombre.');
+                    return;
+                }
+
+                // Normalizar nombres (Tú -> Nico, etc)
+                const nombresCorregidos = nombres.map(nombre => {
+                    if (compararNombres(nombre, 'Tu') || compararNombres(nombre, 'Tú')) {
+                        return 'Nico';
+                    }
+                    return nombre;
+                });
+
+                clasificarJugadores(nombresCorregidos);
+                pantalla1.classList.add('hidden');
+                pantalla2.classList.remove('hidden');
+                actualizarContadoresGrupos();
+            });
+
+            // Clasificar jugadores en grupos
+            function clasificarJugadores(nombres) {
+                grupoVerde.innerHTML = '';
+                grupoNaranja.innerHTML = '';
+                grupoRojo.innerHTML = '';
+
+                nombres.forEach(nombre => {
+                    const elemento = crearElementoJugador(nombre);
+                    if (nombreEnLista(nombre, listaVerde)) {
+                        grupoVerde.appendChild(elemento);
+                        elemento.classList.add('grupo-verde');
+                    } else if (nombreEnLista(nombre, listaNaranja)) {
+                        grupoNaranja.appendChild(elemento);
+                        elemento.classList.add('grupo-naranja');
+                    } else {
+                        grupoRojo.appendChild(elemento);
+                        elemento.classList.add('grupo-rojo');
+                    }
+                });
+            }
+
+            // Crear elemento jugador arrastrable
+            function crearElementoJugador(nombre, clase = '') {
+                const div = document.createElement('div');
+                div.className = `jugador-item draggable p-2 mb-2 rounded-md shadow-sm ${clase}`;
+                div.textContent = nombre;
+                div.setAttribute('draggable', 'true');
+                div.dataset.nombre = nombre;
+
+                div.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', nombre);
+                    this.classList.add('dragging');
+                });
+
+                div.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+
+                return div;
+            }
+
+            // Configurar áreas donde se puede soltar
+            const dropAreas = document.querySelectorAll('.drop-area');
+            dropAreas.forEach(area => {
+                area.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('bg-gray-300');
+                });
+
+                area.addEventListener('dragleave', function() {
+                    this.classList.remove('bg-gray-300');
+                });
+
+                area.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('bg-gray-300');
+                    const nombre = e.dataTransfer.getData('text/plain');
+                    const jugadorElement = document.querySelector(`.draggable[data-nombre="${nombre}"]`);
+                    
+                    if (jugadorElement) {
+                        jugadorElement.remove();
+                        let clase = '';
+                        if (this.id === 'grupo-verde') clase = 'grupo-verde';
+                        else if (this.id === 'grupo-naranja') clase = 'grupo-naranja';
+                        else if (this.id === 'grupo-rojo') clase = 'grupo-rojo';
+                        else if (this.id === 'equipo-pechera') clase = 'pechera-verde';
+                        else if (this.id === 'equipo-sin-pechera') clase = 'sin-pechera';
+                        
+                        const nuevoJugador = crearElementoJugador(nombre, clase);
+                        this.appendChild(nuevoJugador);
+                        
+                        if (this.id === 'equipo-pechera' || this.id === 'equipo-sin-pechera') {
+                            actualizarEquiposPartidoActual();
+                        }
+                        actualizarContadoresGrupos();
+                    }
+                });
+            });
+
+            // Actualizar equipos del partido actual
+            function actualizarEquiposPartidoActual() {
+                const jugadoresPechera = Array.from(equipoPechera.querySelectorAll('.jugador-item'))
+                    .map(elem => elem.dataset.nombre);
+                const jugadoresSinPechera = Array.from(equipoSinPechera.querySelectorAll('.jugador-item'))
+                    .map(elem => elem.dataset.nombre);
+
+                if (partidoActual === 1) {
+                    equiposPartido1.pechera = jugadoresPechera;
+                    equiposPartido1.sinPechera = jugadoresSinPechera;
+                } else {
+                    equiposPartido2.pechera = jugadoresPechera;
+                    equiposPartido2.sinPechera = jugadoresSinPechera;
+                }
+            }
+
+            // Mostrar partido actual en la pantalla 3
+            function mostrarPartidoActual() {
+                equipoPechera.innerHTML = '';
+                equipoSinPechera.innerHTML = '';
+                const equipos = partidoActual === 1 ? equiposPartido1 : equiposPartido2;
+
+                equipos.pechera.forEach((nombre, index) => {
+                    const jugador = crearElementoJugador(nombre, 'pechera-verde');
+                    jugador.textContent = `${index + 1}. ${nombre}`;
+                    equipoPechera.appendChild(jugador);
+                });
+
+                equipos.sinPechera.forEach((nombre, index) => {
+                    const jugador = crearElementoJugador(nombre, 'sin-pechera');
+                    jugador.textContent = `${index + 1}. ${nombre}`;
+                    equipoSinPechera.appendChild(jugador);
+                });
+
+                numeroPartido.textContent = partidoActual;
+                siguientePartido.textContent = partidoActual === 1 ? 2 : 1;
+                marcarArqueros();
+            }
+
+            // Contadores de grupos
+            function actualizarContadoresGrupos() {
+                const contVerde = grupoVerde.querySelectorAll('.jugador-item').length;
+                const contNaranja = grupoNaranja.querySelectorAll('.jugador-item').length;
+                const contRojo = grupoRojo.querySelectorAll('.jugador-item').length;
+                
+                document.getElementById('contador-verde').textContent = `(${contVerde})`;
+                document.getElementById('contador-naranja').textContent = `(${contNaranja})`;
+                document.getElementById('contador-rojo').textContent = `(${contRojo})`;
+            }
+
+            // Agregar jugador tardío
+            btnAgregarTardio.addEventListener('click', function() {
+                const nombre = inputJugadorTardio.value.trim();
+                if (nombre) {
+                    const jugador = crearElementoJugador(nombre, 'grupo-rojo');
+                    grupoRojo.appendChild(jugador);
+                    inputJugadorTardio.value = '';
+                    actualizarContadoresGrupos();
+                }
+            });
+
+            // Marcar arqueros
+            function marcarArqueros() {
+                const equipos = [
+                    equipoPechera,
+                    equipoSinPechera
+                ];
+                
+                equipos.forEach(contenedor => {
+                    const primerJugador = contenedor.querySelector('.jugador-item');
+                    if (primerJugador && !primerJugador.textContent.includes('🧤')) {
+                        primerJugador.textContent = '🧤 ' + primerJugador.textContent;
+                    }
+                });
+            }
+
+            // Botones de navegación
+            btnAtrasP2.addEventListener('click', function() {
+                pantalla2.classList.add('hidden');
+                pantalla1.classList.remove('hidden');
+            });
+
+            btnContinuarP2.addEventListener('click', function() {
+                const jugadoresVerde = Array.from(grupoVerde.querySelectorAll('.jugador-item'))
+                    .map(elem => elem.dataset.nombre);
+                const jugadoresNaranja = Array.from(grupoNaranja.querySelectorAll('.jugador-item'))
+                    .map(elem => elem.dataset.nombre);
+                const jugadoresRojo = Array.from(grupoRojo.querySelectorAll('.jugador-item'))
+                    .map(elem => elem.dataset.nombre);
+
+                const jugadoresPartido1 = [...jugadoresVerde, ...jugadoresNaranja];
+                const jugadoresPartido2 = [...jugadoresRojo];
+
+                equiposPartido1 = distribuirJugadoresAleatoriamente(jugadoresPartido1);
+                equiposPartido2 = distribuirJugadoresAleatoriamente(jugadoresPartido2);
+
+                partidoActual = 1;
+                mostrarPartidoActual();
+                pantalla2.classList.add('hidden');
+                pantalla3.classList.remove('hidden');
+            });
+
+            btnAtrasP3.addEventListener('click', function() {
+                pantalla3.classList.add('hidden');
+                pantalla2.classList.remove('hidden');
+            });
+
+            btnReiniciar.addEventListener('click', function() {
+                ingresoNombres.value = '';
+                actualizarContador();
+                equiposPartido1 = {pechera: [], sinPechera: []};
+                equiposPartido2 = {pechera: [], sinPechera: []};
+                pantalla3.classList.add('hidden');
+                pantalla1.classList.remove('hidden');
+            });
+
+            // Cambiar entre partidos
+            btnCambiarPartido.addEventListener('click', function() {
+                actualizarEquiposPartidoActual();
+                partidoActual = partidoActual === 1 ? 2 : 1;
+                mostrarPartidoActual();
+            });
+
+            // Distribuir jugadores aleatoriamente
+            function distribuirJugadoresAleatoriamente(jugadores) {
+                const jugadoresMezclados = [...jugadores].sort(() => Math.random() - 0.5);
+                const mitad = Math.ceil(jugadoresMezclados.length / 2);
+                return {
+                    pechera: jugadoresMezclados.slice(0, mitad),
+                    sinPechera: jugadoresMezclados.slice(mitad)
+                };
+            }
+
+            // Generar lista para WhatsApp
+            function generarListaWhatsApp() {
+                let lista = '';
+                const grupos = [
+                    { id: 'grupo-verde', titulo: 'VERDES' },
+                    { id: 'grupo-naranja', titulo: 'NARANJAS' },
+                    { id: 'grupo-rojo', titulo: 'ROJOS' }
+                ];
+
+                grupos.forEach(grupo => {
+                    const jugadores = Array.from(document.getElementById(grupo.id).querySelectorAll('.jugador-item'));
+                    if (jugadores.length > 0) {
+                        lista += `*${grupo.titulo}:*\n`;
+                        jugadores.forEach((jugador, index) => {
+                            lista += `${index + 1}. ${jugador.dataset.nombre}\n`;
+                        });
+                        lista += '\n';
+                    }
+                });
+
+                return lista;
+            }
+
+            // Generar lista de equipos
+            function generarListaEquipos() {
+                let lista = '';
+                actualizarEquiposPartidoActual();
+
+                // Partido 1
+                lista += '*PARTIDO 1:*\n';
+                lista += '*Pechera Verde:*\n';
+                equiposPartido1.pechera.forEach((nombre, index) => {
+                    lista += `${index + 1}. ${nombre}\n`;
+                });
+                lista += '\n*Sin Pechera:*\n';
+                equiposPartido1.sinPechera.forEach((nombre, index) => {
+                    lista += `${index + 1}. ${nombre}\n`;
+                });
+
+                // Partido 2
+                lista += '\n*PARTIDO 2:*\n';
+                lista += '*Pechera Verde:*\n';
+                equiposPartido2.pechera.forEach((nombre, index) => {
+                    lista += `${index + 1}. ${nombre}\n`;
+                });
+                lista += '\n*Sin Pechera:*\n';
+                equiposPartido2.sinPechera.forEach((nombre, index) => {
+                    lista += `${index + 1}. ${nombre}\n`;
+                });
+
+                return lista;
+            }
+
+            // Compartir en WhatsApp
+            btnWhatsapp.addEventListener('click', function() {
+                const lista = generarListaWhatsApp();
+                const textoCodeado = encodeURIComponent(lista);
+                window.open(`https://wa.me/?text=${textoCodeado}`, '_blank');
+                mostrarNotificacion();
+            });
+
+            btnWhatsappEquipos.addEventListener('click', function() {
+                const lista = generarListaEquipos();
+                const textoCodeado = encodeURIComponent(lista);
+                window.open(`https://wa.me/?text=${textoCodeado}`, '_blank');
+                mostrarNotificacion();
+            });
+        });
+    </script>
+</body>
+</html>
