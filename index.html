@@ -16,6 +16,7 @@
         }
         .jugador-item {
             transition: all 0.2s ease;
+            position: relative;
         }
         .jugador-item:hover {
             transform: translateY(-2px);
@@ -68,9 +69,42 @@
             background-color: #4CAF50;
             margin-top: -20px;
         }
+        /* Botones de control para móviles */
+        .btn-move {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            line-height: 1;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+        .btn-move:hover, .btn-move:active {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        /* Selector de grupos para dispositivos móviles */
+        .grupo-selector {
+            display: none;
+        }
         @media (max-width: 768px) {
             .cancha {
                 min-height: 400px;
+            }
+            .grupo-selector {
+                display: block;
+            }
+            .drop-area {
+                padding-bottom: 24px; /* Espacio para los botones de control */
+            }
+            .jugador-item {
+                padding-right: 32px !important; /* Espacio para el botón */
             }
         }
     </style>
@@ -106,7 +140,7 @@
                     <input 
                         type="text" 
                         id="input-jugador-tardio" 
-                        class="p-2 border rounded-md mr-2" 
+                        class="p-2 border rounded-md mr-2 flex-1" 
                         placeholder="Nombre de jugador tardío"
                     >
                     <button 
@@ -116,37 +150,47 @@
                         Agregar Tardío
                     </button>
                 </div>
+                
+                <!-- Selector de grupos para móviles -->
+                <div class="grupo-selector mb-4">
+                    <select id="selector-grupos-mobile" class="w-full p-2 border rounded-md bg-gray-100">
+                        <option value="grupo-verde">Grupo Verde</option>
+                        <option value="grupo-naranja">Grupo Naranja</option>
+                        <option value="grupo-rojo">Grupo Rojo</option>
+                    </select>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <!-- Grupo Verde -->
-                    <div>
+                    <div id="contenedor-verde">
                         <h3 class="text-center font-bold mb-2 bg-green-400 p-2 rounded-t-md flex justify-center">
                             Verde <span id="contador-verde" class="ml-2">(0)</span>
                         </h3>
                         <div id="grupo-verde" class="drop-area bg-green-100 p-2 rounded-b-md min-h-[200px]"></div>
                     </div>
                     <!-- Grupo Naranja -->
-                    <div>
+                    <div id="contenedor-naranja">
                         <h3 class="text-center font-bold mb-2 bg-orange-500 p-2 rounded-t-md flex justify-center">
                             Naranja <span id="contador-naranja" class="ml-2">(0)</span>
                         </h3>
                         <div id="grupo-naranja" class="drop-area bg-orange-100 p-2 rounded-b-md min-h-[200px]"></div>
                     </div>
                     <!-- Grupo Rojo -->
-                    <div>
+                    <div id="contenedor-rojo">
                         <h3 class="text-center font-bold mb-2 bg-red-400 p-2 rounded-t-md flex justify-center">
                             Rojo <span id="contador-rojo" class="ml-2">(0)</span>
                         </h3>
                         <div id="grupo-rojo" class="drop-area bg-red-100 p-2 rounded-b-md min-h-[200px]"></div>
                     </div>
                 </div>
-                <div class="flex justify-between">
-                    <button id="btn-atras-p2" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition">
+                <div class="flex justify-between flex-wrap">
+                    <button id="btn-atras-p2" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition mb-2">
                         Atrás
                     </button>
-                    <button id="btn-whatsapp" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center">
+                    <button id="btn-whatsapp" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center mb-2">
                         <i class="bx bxl-whatsapp text-lg mr-2"></i> Compartir en WhatsApp
                     </button>
-                    <button id="btn-continuar-p2" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
+                    <button id="btn-continuar-p2" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition mb-2">
                         Continuar
                     </button>
                 </div>
@@ -169,19 +213,19 @@
                         <div id="equipo-sin-pechera" class="drop-area min-h-[100px]"></div>
                     </div>
                 </div>
-                <div class="flex justify-between">
-                    <button id="btn-atras-p3" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition">
+                <div class="flex justify-between flex-wrap">
+                    <button id="btn-atras-p3" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition mb-2">
                         Atrás
                     </button>
-                    <div>
-                        <button id="btn-cambiar-partido" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition mr-2">
+                    <div class="flex-wrap flex mb-2">
+                        <button id="btn-cambiar-partido" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition mr-2 mb-2">
                             Ver Partido <span id="siguiente-partido">2</span>
                         </button>
-                        <button id="btn-whatsapp-equipos" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center inline-flex">
+                        <button id="btn-whatsapp-equipos" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition flex items-center inline-flex mb-2">
                             <i class="bx bxl-whatsapp text-lg mr-2"></i> Compartir
                         </button>
                     </div>
-                    <button id="btn-reiniciar" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition">
+                    <button id="btn-reiniciar" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition mb-2">
                         Reiniciar
                     </button>
                 </div>
@@ -218,7 +262,14 @@
             const notificacion = document.getElementById('notificacion');
             const inputJugadorTardio = document.getElementById('input-jugador-tardio');
             const btnAgregarTardio = document.getElementById('btn-agregar-tardio');
-
+            const selectorGruposMobile = document.getElementById('selector-grupos-mobile');
+            
+            // Detectar si es dispositivo móvil
+            const esMobile = window.innerWidth <= 768;
+            
+            // Variables para almacenar el estado de la visibilidad de grupos en móvil
+            let grupoActualMobile = 'grupo-verde';
+            
             // Listas predefinidas
             const listaVerde = ['Nico', 'Inti', 'Sergio', 'Benja', 'Beto', 'Daniel', 'Matías Cel', 'Maxi Alto', 'Maxi Chico', 'Rodri', 'Juancho'];
             const listaNaranja = ['Jero', 'Jesus', 'Juan Papá', 'Tato', 'Pipo', 'Victor'];
@@ -227,6 +278,9 @@
             let partidoActual = 1;
             let equiposPartido1 = {pechera: [], sinPechera: []};
             let equiposPartido2 = {pechera: [], sinPechera: []};
+            
+            // Contador para IDs únicos
+            let jugadorIdCounter = 1;
 
             // Función para normalizar texto
             function normalizarTexto(texto) {
@@ -297,6 +351,34 @@
                 pantalla1.classList.add('hidden');
                 pantalla2.classList.remove('hidden');
                 actualizarContadoresGrupos();
+                
+                // En dispositivos móviles, mostrar solo el grupo verde inicialmente
+                if (esMobile) {
+                    mostrarGrupoEnMobile('grupo-verde');
+                }
+            });
+            
+            // Función para mostrar grupos en dispositivos móviles
+            function mostrarGrupoEnMobile(grupoId) {
+                if (!esMobile) return;
+                
+                const contenedores = ['contenedor-verde', 'contenedor-naranja', 'contenedor-rojo'];
+                contenedores.forEach(id => {
+                    const contenedor = document.getElementById(id);
+                    if (id.includes(grupoId.split('-')[1])) {
+                        contenedor.classList.remove('hidden');
+                    } else {
+                        contenedor.classList.add('hidden');
+                    }
+                });
+                
+                grupoActualMobile = grupoId;
+                selectorGruposMobile.value = grupoId;
+            }
+            
+            // Evento para cambiar entre grupos en móvil
+            selectorGruposMobile.addEventListener('change', function() {
+                mostrarGrupoEnMobile(this.value);
             });
 
             // Clasificar jugadores en grupos
@@ -322,14 +404,28 @@
 
             // Crear elemento jugador arrastrable
             function crearElementoJugador(nombre, clase = '') {
+                const id = `jugador-${jugadorIdCounter++}`;
                 const div = document.createElement('div');
                 div.className = `jugador-item draggable p-2 mb-2 rounded-md shadow-sm ${clase}`;
                 div.textContent = nombre;
                 div.setAttribute('draggable', 'true');
                 div.dataset.nombre = nombre;
+                div.id = id;
+
+                // Para dispositivos móviles, agregamos botón para mover
+                if (esMobile) {
+                    const btnMove = document.createElement('button');
+                    btnMove.className = 'btn-move';
+                    btnMove.innerHTML = '<i class="bx bx-transfer"></i>';
+                    btnMove.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        mostrarOpcionesMoverJugador(id);
+                    });
+                    div.appendChild(btnMove);
+                }
 
                 div.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/plain', nombre);
+                    e.dataTransfer.setData('text/plain', id);
                     this.classList.add('dragging');
                 });
 
@@ -338,6 +434,103 @@
                 });
 
                 return div;
+            }
+            
+            // Función para mostrar opciones de mover jugador (móvil)
+            function mostrarOpcionesMoverJugador(jugadorId) {
+                const jugador = document.getElementById(jugadorId);
+                const grupoActual = jugador.parentElement.id;
+                const nombreJugador = jugador.dataset.nombre;
+                
+                // Grupos disponibles para mover
+                let grupos = ['grupo-verde', 'grupo-naranja', 'grupo-rojo'];
+                
+                // Si estamos en pantalla 3 (partidos)
+                if (pantalla3.classList.contains('hidden') === false) {
+                    grupos = ['equipo-pechera', 'equipo-sin-pechera'];
+                }
+                
+                // Filtrar el grupo actual
+                grupos = grupos.filter(g => g !== grupoActual);
+                
+                // Crear menú de selección
+                const opciones = grupos.map(g => {
+                    let nombreGrupo = g.replace('grupo-', '').charAt(0).toUpperCase() + g.replace('grupo-', '').slice(1);
+                    if (g === 'equipo-pechera') nombreGrupo = 'Pechera Verde';
+                    if (g === 'equipo-sin-pechera') nombreGrupo = 'Sin Pechera';
+                    return `<button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-md mb-1 w-full text-left" data-target="${g}">${nombreGrupo}</button>`;
+                }).join('');
+                
+                const menu = document.createElement('div');
+                menu.className = 'absolute z-50 bg-white p-2 rounded-md shadow-lg';
+                menu.style.top = (jugador.offsetTop + jugador.offsetHeight) + 'px';
+                menu.style.left = jugador.offsetLeft + 'px';
+                menu.style.width = '140px';
+                menu.innerHTML = `
+                    <p class="text-sm font-bold mb-1">${nombreJugador}</p>
+                    <p class="text-xs mb-2">Mover a:</p>
+                    ${opciones}
+                    <button class="bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded-md w-full text-left" id="cerrar-menu">Cancelar</button>
+                `;
+                
+                // Eliminar menú anterior si existe
+                const menuAnterior = document.querySelector('.absolute.z-50');
+                if (menuAnterior) menuAnterior.remove();
+                
+                document.body.appendChild(menu);
+                
+                // Eventos para botones del menú
+                menu.querySelectorAll('button[data-target]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const targetId = this.dataset.target;
+                        moverJugador(jugadorId, targetId);
+                        menu.remove();
+                    });
+                });
+                
+                document.getElementById('cerrar-menu').addEventListener('click', function() {
+                    menu.remove();
+                });
+                
+                // Cerrar al hacer clic fuera del menú
+                document.addEventListener('click', function cerrarMenu(e) {
+                    if (!menu.contains(e.target) && !jugador.contains(e.target)) {
+                        menu.remove();
+                        document.removeEventListener('click', cerrarMenu);
+                    }
+                });
+            }
+            
+            // Función para mover jugador entre grupos
+            function moverJugador(jugadorId, targetGroupId) {
+                const jugador = document.getElementById(jugadorId);
+                if (!jugador) return;
+                
+                const nombre = jugador.dataset.nombre;
+                const grupoOrigen = jugador.parentElement.id;
+                const target = document.getElementById(targetGroupId);
+                
+                // Eliminar clase de grupo anterior
+                jugador.classList.remove('grupo-verde', 'grupo-naranja', 'grupo-rojo', 'pechera-verde', 'sin-pechera');
+                
+                // Añadir la clase correspondiente al nuevo grupo
+                if (targetGroupId === 'grupo-verde') jugador.classList.add('grupo-verde');
+                else if (targetGroupId === 'grupo-naranja') jugador.classList.add('grupo-naranja');
+                else if (targetGroupId === 'grupo-rojo') jugador.classList.add('grupo-rojo');
+                else if (targetGroupId === 'equipo-pechera') jugador.classList.add('pechera-verde');
+                else if (targetGroupId === 'equipo-sin-pechera') jugador.classList.add('sin-pechera');
+                
+                // Mover al nuevo grupo
+                target.appendChild(jugador);
+                
+                // Actualizar contadores
+                actualizarContadoresGrupos();
+                
+                // Si estamos en pantalla de partidos, actualizar equipos
+                if (targetGroupId === 'equipo-pechera' || targetGroupId === 'equipo-sin-pechera') {
+                    actualizarEquiposPartidoActual();
+                    marcarArqueros();
+                }
             }
 
             // Configurar áreas donde se puede soltar
@@ -355,11 +548,21 @@
                 area.addEventListener('drop', function(e) {
                     e.preventDefault();
                     this.classList.remove('bg-gray-300');
-                    const nombre = e.dataTransfer.getData('text/plain');
-                    const jugadorElement = document.querySelector(`.draggable[data-nombre="${nombre}"]`);
+                    const jugadorId = e.dataTransfer.getData('text/plain');
+                    
+                    // Verificar si el elemento ya existe y eliminarlo primero
+                    const jugadorElement = document.getElementById(jugadorId);
                     
                     if (jugadorElement) {
+                        // Si el jugador ya está en esta área, no hacemos nada
+                        if (jugadorElement.parentElement === this) {
+                            return;
+                        }
+                        
+                        // Eliminar del grupo original
                         jugadorElement.remove();
+                        
+                        // Determinar la clase según el área de destino
                         let clase = '';
                         if (this.id === 'grupo-verde') clase = 'grupo-verde';
                         else if (this.id === 'grupo-naranja') clase = 'grupo-naranja';
@@ -367,9 +570,16 @@
                         else if (this.id === 'equipo-pechera') clase = 'pechera-verde';
                         else if (this.id === 'equipo-sin-pechera') clase = 'sin-pechera';
                         
-                        const nuevoJugador = crearElementoJugador(nombre, clase);
-                        this.appendChild(nuevoJugador);
+                        // Quitar las clases anteriores de grupos
+                        jugadorElement.classList.remove('grupo-verde', 'grupo-naranja', 'grupo-rojo', 'pechera-verde', 'sin-pechera');
                         
+                        // Añadir la nueva clase
+                        jugadorElement.classList.add(clase);
+                        
+                        // Añadir al nuevo grupo
+                        this.appendChild(jugadorElement);
+                        
+                        // Actualizar equipos si es necesario
                         if (this.id === 'equipo-pechera' || this.id === 'equipo-sin-pechera') {
                             actualizarEquiposPartidoActual();
                         }
@@ -448,8 +658,11 @@
                 
                 equipos.forEach(contenedor => {
                     const primerJugador = contenedor.querySelector('.jugador-item');
-                    if (primerJugador && !primerJugador.textContent.includes('🧤')) {
-                        primerJugador.textContent = '🧤 ' + primerJugador.textContent;
+                    if (primerJugador) {
+                        const nombreActual = primerJugador.textContent;
+                        if (!nombreActual.includes('🧤')) {
+                            primerJugador.textContent = '🧤 ' + nombreActual;
+                        }
                     }
                 });
             }
@@ -483,6 +696,11 @@
             btnAtrasP3.addEventListener('click', function() {
                 pantalla3.classList.add('hidden');
                 pantalla2.classList.remove('hidden');
+                
+                // En dispositivos móviles, mostrar el grupo activo
+                if (esMobile) {
+                    mostrarGrupoEnMobile(grupoActualMobile);
+                }
             });
 
             btnReiniciar.addEventListener('click', function() {
@@ -578,6 +796,11 @@
                 window.open(`https://wa.me/?text=${textoCodeado}`, '_blank');
                 mostrarNotificacion();
             });
+            
+            // Al cargar, mostrar solo el grupo verde en móviles
+            if (esMobile) {
+                mostrarGrupoEnMobile('grupo-verde');
+            }
         });
     </script>
 </body>
